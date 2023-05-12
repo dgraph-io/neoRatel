@@ -17,7 +17,7 @@ import { useTabsStore } from '../../store/tabsStore';
 import styled from '@emotion/styled';
 import { SiDgraph, SiGraphql } from "react-icons/si";
 import { VscJson } from "react-icons/vsc";
-
+import DgraphConfigDialog from '../ConfigDialog/ConfDialog';
 
 
 const WelcomePage = () => {
@@ -37,6 +37,7 @@ const WelcomePage = () => {
         <Button onClick={() => handleCreateTab('JSON View')}><VscJson /> Create JSON Tab</Button>
         <Button onClick={() => handleCreateTab('RDF')}>Create RDF Tab</Button>
       </ButtonsContainer>
+      <DgraphConfigDialog />
     </WelcomeContainer>
   );
 };
