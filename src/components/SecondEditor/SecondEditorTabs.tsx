@@ -12,31 +12,67 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { SecondTabList, SecondTabTrigger, SecondTabContent } from './styles';
 import * as Tabs from '@radix-ui/react-tabs';
 import { FiActivity, FiCode, FiMapPin } from 'react-icons/fi';
+import { editor } from 'monaco-editor';
+import { useTabsStore } from '../../store/tabsStore';
+
+interface JsonEditorProps {
+  value: any;
+}
+
+const JsonEditor: React.FC<JsonEditorProps> = ({ value }) => {
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  let codeEditor: editor.IStandaloneCodeEditor | null = null;
+
+  useEffect(() => {
+    if (containerRef.current) {
+      codeEditor = editor.create(containerRef.current, {
+        value: JSON.stringify(value, null, 2),
+        language: 'json',
+        theme: 'vs-dark',
+        automaticLayout: true, // Add this line
+      });
+
+      return () => {
+        if (codeEditor) {
+          codeEditor.dispose();
+        }
+      };
+    }
+  }, [value]);
+
+  return <div ref={containerRef} style={{ height: '100%', width: '100%' }} />; // Change size to 100%
+};
 
 
 export const SecondEditorTabs = () => {
+  const activeTabId = useTabsStore((state) => state.activeTabId);
+  const tab = useTabsStore.getState().tabs.find(tab => tab.id === activeTabId);
+
+  const result = tab?.result;
+  const defaultTab = tab?.defaultTab;
+  const setDefaultTab = useTabsStore((state) => state.setDefaultTab);
+
   return (
-    <Tabs.Root defaultValue="graphView">
+    <Tabs.Root defaultValue={defaultTab} onValueChange={() => setDefaultTab}>
       <SecondTabList>
         <SecondTabTrigger value="graphView">
-          {/* Insira o ícone aqui */}
           <FiActivity /> Graph View
         </SecondTabTrigger>
         <SecondTabTrigger value="json">
-          {/* Insira o ícone aqui */}
           <FiCode /> JSON
         </SecondTabTrigger>
         <SecondTabTrigger value="geo">
-          {/* Insira o ícone aqui */}
           <FiMapPin /> Geo
         </SecondTabTrigger>
       </SecondTabList>
       <SecondTabContent value="graphView">Graph View Content</SecondTabContent>
-      <SecondTabContent value="json">JSON Content</SecondTabContent>
+      <SecondTabContent value="json">
+      <JsonEditor value={result} />
+      </SecondTabContent>
       <SecondTabContent value="geo">Geo Content</SecondTabContent>
     </Tabs.Root>
   );

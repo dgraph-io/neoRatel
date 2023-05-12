@@ -100,6 +100,14 @@ height: 100%;
   height: 100%;
 }
 
+div[dir="ltr"] {
+  height: 100% !important;
+}
+
+div[role="tablist"] {
+  z-index: 10000;
+}
+
 .gutter {
   background-color: gray;
   background-clip: padding-box;
