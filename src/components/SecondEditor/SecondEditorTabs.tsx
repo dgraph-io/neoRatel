@@ -16,8 +16,8 @@ import React, { useEffect, useRef } from 'react';
 import { SecondTabList, SecondTabTrigger, SecondTabContent } from './styles';
 import * as Tabs from '@radix-ui/react-tabs';
 import { FiActivity, FiCode, FiMapPin } from 'react-icons/fi';
-import useResultStore from '../../store/resultStore';
 import { editor } from 'monaco-editor';
+import { useTabsStore } from '../../store/tabsStore';
 
 interface JsonEditorProps {
   value: any;
@@ -49,13 +49,15 @@ const JsonEditor: React.FC<JsonEditorProps> = ({ value }) => {
 
 
 export const SecondEditorTabs = () => {
+  const activeTabId = useTabsStore((state) => state.activeTabId);
+  const tab = useTabsStore.getState().tabs.find(tab => tab.id === activeTabId);
 
-  const result = useResultStore((state : any) => state.result);
-  const defaultTab = useResultStore((state: any) => state.defaultTab);
-  const setDefaultTab = useResultStore((state: any) => state.setDefaultTab);
+  const result = tab?.result;
+  const defaultTab = tab?.defaultTab;
+  const setDefaultTab = useTabsStore((state) => state.setDefaultTab);
 
   return (
-    <Tabs.Root defaultValue={defaultTab} onValueChange={setDefaultTab}>
+    <Tabs.Root defaultValue={defaultTab} onValueChange={() => setDefaultTab}>
       <SecondTabList>
         <SecondTabTrigger value="graphView">
           <FiActivity /> Graph View

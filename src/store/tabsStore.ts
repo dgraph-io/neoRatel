@@ -16,15 +16,17 @@ import create from 'zustand';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
 
 interface Tab {
-    id: number;
-    title: string;
-    content: string;
-    type: string;
-    language: string;
-    Endpoint: string;
-    defaultOperations: string;
-    defaultVariables: string;
-  }
+  id: number;
+  title: string;
+  content: string;
+  result?: any;
+  type: string;
+  language: string;
+  Endpoint: string;
+  defaultOperations: string;
+  defaultVariables: string;
+  defaultTab: string;
+}
 
 type TabsStore = {
     tabs: Tab[];
@@ -33,7 +35,8 @@ type TabsStore = {
     removeAllTabs: () => void;
     removeTab: (id: number) => void;
     switchTab: (id: number) => void;
-    updateTabContent: (id: number, content: string) => void;
+    updateTabContent: (id: number, content: string, result: any) => void;
+    setDefaultTab: (id: number, tab: string) => void;
 };
 
 export const useTabsStore = create<TabsStore>((set, get) => ({
@@ -44,14 +47,29 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
       ...state,
       tabs: [],
     })),
+    setDefaultTab: (id: number, tab: string) => set((state) => {
+      const updatedTabs = state.tabs.map((tabItem) => {
+          if (tabItem.id === id) {
+              return {
+                  ...tabItem,
+                  defaultTab: tab,
+              };
+          }
+          return tabItem;
+      });
+      return {
+          ...state,
+          tabs: updatedTabs,
+      };
+  }),
     addTab: (type) => {
         const tabs = get().tabs;
         const newId = tabs.length > 0 ? Math.max(...tabs.map((tab) => tab.id)) + 1 : 1;
-        const formattedString = `{\n\tq(func: Type(User)) {\n \t expand(_all_)\n\t}\n}`;
+        const formattedString = `schema {} \n\n{\n\tq(func: Type(User)) {\n \t expand(_all_)\n\t}\n}`;
 
         
         let language;
-        let content = `# Write your DQL query here \n\n${formattedString}`;
+        let content = `# ${newId} Write your DQL query here \n\n${formattedString}`;
         let Endpoint = 'http://localhost:8080';
         let defaultOperations = '';
         let defaultVariables = '';
@@ -70,27 +88,58 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
         }
 
         set({
-            tabs: [...tabs, { id: newId, title: `${type} ${newId}`, type, content, language, Endpoint, defaultOperations, defaultVariables}],
-            activeTabId: newId,
-          });
+          tabs: [
+            ...tabs,
+            {
+              id: newId,
+              title: `${type} ${newId}`,
+              type,
+              content,
+              language,
+              Endpoint,
+              defaultOperations,
+              defaultVariables,
+              defaultTab: "json",
+              result: {}
+            },
+          ],
+          activeTabId: newId,
+        });
+        
     },
     removeTab: (id: number) => set((state) => {
-        const tabIndex = state.tabs.findIndex((tab) => tab.id === id);
-        if (tabIndex === -1) return;
-        const newTabs = state.tabs.filter((tab) => tab.id !== id);
-        const newActiveTab = state.activeTabId === id
-            ? newTabs[tabIndex] ? newTabs[tabIndex].id : newTabs[tabIndex - 1]?.id
-            : state.activeTabId;
-        return { tabs: newTabs, activeTabId: newActiveTab };
-    }),
+      const tabIndex = state.tabs.findIndex((tab) => tab.id === id);
+      if (tabIndex === -1) return state;  // return current state if tab is not found
+      const newTabs = state.tabs.filter((tab) => tab.id !== id);
+      const newActiveTab = state.activeTabId === id
+          ? newTabs[tabIndex] ? newTabs[tabIndex].id : newTabs[tabIndex - 1]?.id
+          : state.activeTabId;
+      return { tabs: newTabs, activeTabId: newActiveTab };
+  }),
+  
 
     switchTab: (id: number) => {
         set({ activeTabId: id });
     },
-    updateTabContent: (id: number, content: string) => {
-        const updatedTabs = get().tabs.map((tab) => (tab.id === id ? { ...tab, content } : tab));
-        set({ tabs: updatedTabs });
-    },
+    updateTabContent: (id: number, content: string, result: any) => {
+      console.log('updateTabContent', id, content);
+      set((state) => {
+        const updatedTabs = state.tabs.map((tab) => {
+          if (tab.id === id) {
+            return {
+              ...tab,
+              content: content,
+              result: result
+            };
+          }
+          return tab;
+        });
+        return {
+          ...state,
+          tabs: updatedTabs
+        };
+      });
+    },    
 }));
 
 

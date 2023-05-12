@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useDgraphConfigStore } from "../store/dgraphConfigStore";
-import useResultStore from '../store/resultStore';
+import { useTabsStore } from "../store/tabsStore";
 
 class DgraphService {
   currentUrl: null;
@@ -27,7 +27,7 @@ class DgraphService {
     return path;
   }
 
-  async query(q: any) {
+  async query(q: any, tabId: number) {
     const { serverUrl, slashApiKey, authToken } =
       useDgraphConfigStore.getState();
     if (serverUrl !== this.currentUrl) {
@@ -42,7 +42,7 @@ class DgraphService {
         },
       });
       // Set the result in the Zustand store
-      useResultStore.getState().setResult(response.data);
+      useTabsStore.getState().updateTabContent(tabId, q, response.data);
       return response.data;
     } catch (error) {
       console.error("Error fetching data from Dgraph:", error);
