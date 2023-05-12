@@ -35,7 +35,7 @@ type TabsStore = {
     removeAllTabs: () => void;
     removeTab: (id: number) => void;
     switchTab: (id: number) => void;
-    updateTabContent: (id: number, content: string, result: any) => void;
+    updateTabContent: (id: number, content: string, result?: any) => void;
     setDefaultTab: (id: number, tab: string) => void;
 };
 
@@ -121,25 +121,26 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
     switchTab: (id: number) => {
         set({ activeTabId: id });
     },
-    updateTabContent: (id: number, content: string, result: any) => {
+    updateTabContent: (id: number, content: string, result: any = undefined) => {
       console.log('updateTabContent', id, content);
       set((state) => {
-        const updatedTabs = state.tabs.map((tab) => {
-          if (tab.id === id) {
-            return {
-              ...tab,
-              content: content,
-              result: result
-            };
-          }
-          return tab;
-        });
-        return {
-          ...state,
-          tabs: updatedTabs
-        };
+          const updatedTabs = state.tabs.map((tab) => {
+              if (tab.id === id) {
+                  return {
+                      ...tab,
+                      content: content,
+                      result: result !== undefined ? result : tab.result
+                  };
+              }
+              return tab;
+          });
+          return {
+              ...state,
+              tabs: updatedTabs
+          };
       });
-    },    
+  },   
+    
 }));
 
 
