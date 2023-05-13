@@ -33,6 +33,8 @@ import DgraphService from '../../services/dgraphService';
 
 import '../../userWorker';
 
+import { dql, TokensDefaults, DQLTheme } from '../../monaco-editor-languages';
+
 export const EditorArea = () => {
 
   // function toggleTheme() {
@@ -46,7 +48,6 @@ export const EditorArea = () => {
   //   }
   // }
 
-  
   const htmlElement = document.querySelector('html');
   htmlElement.setAttribute('data-theme', 'dark');
 
@@ -67,7 +68,7 @@ export const EditorArea = () => {
     if (activeTab) {
       updateTabContent(activeTab, newValue);
     }
-  }, 1000);
+  }, 4000);
 
   const _handleEditorChange = () => {
     if (editorRef.current) {
@@ -150,8 +151,55 @@ export const EditorArea = () => {
       }
     }, [editorRef]);
 
-    return (
+    const editorWillMount = (monaco) => {
 
+      monaco.languages.register({ id: 'dql' });
+
+      monaco.languages.setLanguageConfiguration('dql', dql);
+
+      // Register a tokens provider for the language
+      monaco.languages.setMonarchTokensProvider('dql',
+        TokensDefaults
+      );
+      // Define a new theme that contains only rules that match this language
+      monaco.editor.defineTheme('DQLTheme', DQLTheme);
+      // Register a completion item provider for the new language
+      monaco.languages.registerCompletionItemProvider('dql', {
+        provideCompletionItems: () => {
+          var  suggestions = [
+            {
+              label: 'simpleText',
+              kind: monaco.languages.CompletionItemKind.Text,
+              insertText: 'simpleText',
+            },
+            {
+              label: 'testing',
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: 'testing(${1:condition})',
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+            },
+            {
+              label: 'func',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: [
+                '{\n   q(${1:func: eq(predicate, "value")}) {',
+                '    expand(_all_)',
+                '   }',
+                '}',
+              ].join('\n'),
+              insertTextRules:
+                monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'If-Else Statement',
+            },
+          ];
+          return { suggestions: suggestions };
+        }
+      });
+
+    }
+
+    return (
       <MonacoEditor
         width="100%"
         height="100%"
@@ -159,11 +207,12 @@ export const EditorArea = () => {
         theme="vs-dark"
         value={content}
         onChange={handleEditorChangeED}
+        editorWillMount={editorWillMount}
         editorDidMount={(editor) => {
           editorRef.current = editor;
+          //editor.focus();
         }}
       />
-
     );
   };
 
@@ -315,33 +364,33 @@ export const EditorArea = () => {
 
 
   return (
-      <EditorAreaStyled>
-        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-          <>
-            {tabs.length < 1 ? (
-              <WelcomePage />
-            ) : (
-              tabs.map((tab) => (
-                <TabContent key={tab.id} value={tab.id}>
-                  <React.StrictMode>
-                    <RenderMonaco value={tab} />
-                  </React.StrictMode>
-                </TabContent>
-              ))
-            )}
-            <TabListContainer>
-              <TabList>
-                {tabs.map((tab) => (
-                  <TabTrigger key={tab.id} value={tab.id}>
-                    {tab.title}
-                  </TabTrigger>
-                ))}
-                <AddTabDialog />
-              </TabList>
-            </TabListContainer>
-          </>
-        </Tabs.Root>
-      </EditorAreaStyled>
+    <EditorAreaStyled>
+      <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+        <>
+          {tabs.length < 1 ? (
+            <WelcomePage />
+          ) : (
+            tabs.map((tab) => (
+              <TabContent key={tab.id} value={tab.id}>
+                <React.StrictMode>
+                  <RenderMonaco value={tab} />
+                </React.StrictMode>
+              </TabContent>
+            ))
+          )}
+          <TabListContainer>
+            <TabList>
+              {tabs.map((tab) => (
+                <TabTrigger key={tab.id} value={tab.id}>
+                  {tab.title}
+                </TabTrigger>
+              ))}
+              <AddTabDialog />
+            </TabList>
+          </TabListContainer>
+        </>
+      </Tabs.Root>
+    </EditorAreaStyled>
   );
 
 };
