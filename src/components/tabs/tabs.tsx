@@ -33,6 +33,10 @@ import DgraphService from '../../services/dgraphService';
 
 import '../../userWorker';
 
+import { func } from '../../monaco-editor-languages';
+
+const init = func();
+
 export const EditorArea = () => {
 
   // function toggleTheme() {
@@ -46,7 +50,6 @@ export const EditorArea = () => {
   //   }
   // }
 
-  
   const htmlElement = document.querySelector('html');
   htmlElement.setAttribute('data-theme', 'dark');
 
@@ -67,7 +70,7 @@ export const EditorArea = () => {
     if (activeTab) {
       updateTabContent(activeTab, newValue);
     }
-  }, 1000);
+  }, 17000);
 
   const _handleEditorChange = () => {
     if (editorRef.current) {
@@ -87,6 +90,8 @@ export const EditorArea = () => {
     let { id, title, content, type, language, Endpoint, defaultOperations, defaultVariables } = e.e.value;
     const { editorRef } = e;
 
+    const editorRefM = useRef(null);
+
     const removeAllTabs = useTabsStore((state) => state.removeAllTabs);
 
     function deleteAllTabs() {
@@ -95,7 +100,7 @@ export const EditorArea = () => {
 
     useEffect(() => {
       if (editorRef.current) {
-        const myAction = {
+        const runDQL = {
           id: 'my-unique-id',
           label: 'Run Query',
           keybindings: [
@@ -115,6 +120,19 @@ export const EditorArea = () => {
             return null;
           },
         };
+        const save = {
+          id: 'my-save-command',
+          label: 'Save',
+          keybindings: [KeyMod.CtrlCmd | KeyCode.KeyS],
+          contextMenuGroupId: 'navigation',
+          contextMenuOrder: 1.5,
+          run: function (ed) {
+            console.log("Save command triggered");
+            console.log(ed.getValue());
+            handleEditorChange(ed.getValue());
+            // Aqui você pode implementar a lógica para salvar o conteúdo do editor
+          }
+        }
         const del = {
           id: 'del-my-unique-id',
           label: 'Delete Tab',
@@ -144,14 +162,16 @@ export const EditorArea = () => {
           },
         };
 
-        editorRef.current.addAction(myAction);
+        editorRef.current.addAction(runDQL);
+        editorRef.current.addAction(save);
         editorRef.current.addAction(del);
         editorRef.current.addAction(removeAll);
+
       }
     }, [editorRef]);
 
-    return (
 
+    return (
       <MonacoEditor
         width="100%"
         height="100%"
@@ -160,10 +180,14 @@ export const EditorArea = () => {
         value={content}
         onChange={handleEditorChangeED}
         editorDidMount={(editor) => {
+          editorRef.current = null;
           editorRef.current = editor;
+          editor.focus();
+        }}
+        editorWillUnmount={() => {
+          editorRef.current = null;
         }}
       />
-
     );
   };
 
@@ -191,14 +215,16 @@ export const EditorArea = () => {
             togglePanel();
             _handleEditorChange();
           }}
-          onDrag={(newSizes) => {
+          onDragEnd={(newSizes) => {
             setSplitSizes(newSizes);
             _handleEditorChange();
           }}
+
           direction="horizontal"
         >
           <div className="split-pane">
             <CustomMonacoEditor e={value} editorRef={editorRef} />
+            {/* <DQLEditor value={content} /> */}
           </div>
           <div className="split-pane">
             <SecondEditorTabs />
@@ -289,7 +315,6 @@ export const EditorArea = () => {
     });
   };
 
-
   const handleHideContextMenu = () => {
     setContextMenuProps(null);
   };
@@ -315,33 +340,33 @@ export const EditorArea = () => {
 
 
   return (
-      <EditorAreaStyled>
-        <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
-          <>
-            {tabs.length < 1 ? (
-              <WelcomePage />
-            ) : (
-              tabs.map((tab) => (
-                <TabContent key={tab.id} value={tab.id}>
-                  <React.StrictMode>
-                    <RenderMonaco value={tab} />
-                  </React.StrictMode>
-                </TabContent>
-              ))
-            )}
-            <TabListContainer>
-              <TabList>
-                {tabs.map((tab) => (
-                  <TabTrigger key={tab.id} value={tab.id}>
-                    {tab.title}
-                  </TabTrigger>
-                ))}
-                <AddTabDialog />
-              </TabList>
-            </TabListContainer>
-          </>
-        </Tabs.Root>
-      </EditorAreaStyled>
+    <EditorAreaStyled>
+      <Tabs.Root value={activeTab} onValueChange={setActiveTab}>
+        <>
+          {tabs.length < 1 ? (
+            <WelcomePage />
+          ) : (
+            tabs.map((tab) => (
+              <TabContent key={tab.id} value={tab.id}>
+                <React.StrictMode>
+                  <RenderMonaco value={tab} />
+                </React.StrictMode>
+              </TabContent>
+            ))
+          )}
+          <TabListContainer>
+            <TabList>
+              {tabs.map((tab) => (
+                <TabTrigger key={tab.id} value={tab.id}>
+                  {tab.title}
+                </TabTrigger>
+              ))}
+              <AddTabDialog />
+            </TabList>
+          </TabListContainer>
+        </>
+      </Tabs.Root>
+    </EditorAreaStyled>
   );
 
 };
