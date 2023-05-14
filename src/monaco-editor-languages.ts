@@ -157,13 +157,13 @@ monaco.languages.registerCompletionItemProvider('dql', {
     const keywords = ['allofterms', 'anyofterms', 'regexp', 'alloftext', 'le', 'ge', 'lt', 'gt', 'eq'];
     const keywords2 = ['uid', 'has', 'type'];
     const keywords3 = ['floor', 'ceil', 'ln', 'exp', 'sqrt', 'since', 'pow(a, b)', 'logbase(a,b)', 'cond(a, b, c)',
-    'years', 'score', 'date', 'name@en', 'name@en:.', 'name@en:pl', 'cascade', 'name@en:pl:.', 'name@*', 'normalize', 'ignorereflex', 'recurse', '@en', '@fr', '@pt', '@ru'
-  ];
-   
+      'years', 'score', 'date', 'name@en', 'name@en:.', 'name@en:pl', 'cascade', 'name@en:pl:.', 'name@*', 'normalize', 'ignorereflex', 'recurse', '@en', '@fr', '@pt', '@ru'
+    ];
+
     const keywordSuggestions = keywords.map(keyword => ({
       label: keyword,
       kind: monaco.languages.CompletionItemKind.Keyword,
-      insertText: keyword +'(${1:predicate}, "${2:value}") { \n   ${3:edge} \n }',
+      insertText: '{ \n   query(func:' + keyword + '(${1:predicate}, "${2:value}") ) { \n      ${3:edge} \n    }' + '\n }',
       insertTextRules:
         monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     }));
@@ -171,7 +171,7 @@ monaco.languages.registerCompletionItemProvider('dql', {
     const keywordSuggestions2 = keywords2.map(keyword => ({
       label: keyword,
       kind: monaco.languages.CompletionItemKind.Keyword,
-      insertText: '{ \n'+ 'query(func:  '+ keyword + (keyword == 'uid' ? '(${1:0x1, 0x2}) ) { \n   ${2:edge} \n }': '(${1:value}) { \n   ${2:edge} \n }') + '\n }',
+      insertText: '{ \n' + 'query(func:  ' + keyword + (keyword == 'uid' ? '(${1:0x1, 0x2}) ) { \n   ${2:edge} \n }' : '(${1:value}) { \n   ${2:edge} \n }') + '\n }',
       insertTextRules:
         monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
     }));
@@ -322,7 +322,7 @@ monaco.languages.registerCompletionItemProvider('dql', {
         kind: monaco.languages.CompletionItemKind.Text,
         insertText: 'me() {\n max(val(${1:varName}))\n}',
         insertTextRules:
-        monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+          monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
       },
       {
         label: 'cascade',
@@ -371,7 +371,7 @@ monaco.languages.registerCompletionItemProvider('dql', {
         kind: monaco.languages.CompletionItemKind.Snippet,
         insertText: [
           '{\n   q(func: ${1:eq}(${2:predicate}, "${3:value}")) {',
-          '    expand(_all_)',
+          '      expand(_all_)',
           '   }',
           '}',
         ].join('\n'),
