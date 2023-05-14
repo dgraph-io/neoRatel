@@ -34,4 +34,4 @@ const FloatingControl = ({ activeTab, onPlay, onClear, onClone, onAdd, onSetting
     );
 };
 
-export default FloatingControl;  
+export default FloatingControl;
