@@ -18,8 +18,9 @@ import { editor, KeyCode, KeyMod } from 'monaco-editor';
 import MonacoEditor from 'react-monaco-editor';
 import { useTabsStore } from '../../store/tabsStore';
 import { TabList, TabTrigger, TabContent, EditorAreaStyled, TabListContainer } from './styles';
-import * as ContextMenu from '@radix-ui/react-context-menu';
 import { debounce } from 'lodash';
+
+import FloatingControl from '../FloatingControl/index';
 
 import WelcomePage from '../Welcome/WelcomePage';
 
@@ -60,15 +61,33 @@ export const EditorArea = () => {
   const setActiveTab = useTabsStore((state) => state.switchTab);
   const updateTabContent = useTabsStore((state) => state.updateTabContent);
   const removeTab = useTabsStore((state) => state.removeTab);
+
   const editorRef = useRef(null);
+  const [splitSizes, setSplitSizes] = useState<[number, number]>([50, 50]);
 
   const handleEditorChange = (newValue: string) => {
     updateTabContent(activeTab, newValue);
   };
 
+  const handleQuery = async (query: string) => {
+    try {
+      const response = await DgraphService.query(query, activeTab);
+      console.log('Query response:', response);
+    } catch (err) {
+      console.error('Error running query:', err);
+    }
+    return null;
+  };
+
+  const handleRemoveTab = () => {
+    removeTab(activeTab);
+  };
+
+
   const handleEditorChangeED = debounce((newValue: string) => {
     if (activeTab) {
-      updateTabContent(activeTab, newValue);
+      const currentContent = editorRef.current.getValue();
+      handleEditorChange(currentContent);
     }
   }, 17000);
 
@@ -111,13 +130,7 @@ export const EditorArea = () => {
           run: async function (ed) {
             const query = ed.getValue();
             console.log('Running query!', query);
-            try {
-              const response = await DgraphService.query(query, activeTab);
-              console.log('Query response:', response);
-            } catch (err) {
-              console.error('Error running query:', err);
-            }
-            return null;
+            handleQuery(query);
           },
         };
         const save = {
@@ -170,7 +183,6 @@ export const EditorArea = () => {
       }
     }, [editorRef]);
 
-
     return (
       <MonacoEditor
         width="100%"
@@ -199,10 +211,38 @@ export const EditorArea = () => {
     }
   };
 
+
   const RenderMonaco = (value: any) => {
     let { id, title, content, type, language, Endpoint, defaultOperations, defaultVariables } = value.value;
 
+    const handlePlay = () => {
+      // execute the code in the editor
+      console.log('play');
+      const currentContent = editorRef.current.getValue();
+      handleEditorChange(currentContent);
+      handleQuery(currentContent);
+    };
 
+    const handleClear = () => {
+      // clear the editor content
+      console.log('clear');
+      handleEditorChange('');
+    };
+
+    const handleClone = () => {
+      // clone the current tab
+      console.log('clone');
+    };
+
+    const handlePlus = () => {
+      // add a new tab
+      console.log('plus');
+    };
+
+    const handleSettings = () => {
+      // open settings
+      console.log('settings');
+    };
 
     switch (language) {
       case 'dql':
@@ -223,8 +263,16 @@ export const EditorArea = () => {
           direction="horizontal"
         >
           <div className="split-pane">
+            <FloatingControl
+              onPlay={handlePlay}
+              onClear={handleClear}
+              onClone={handleClone}
+              onPlus={handlePlus}
+              onSettings={handleSettings}
+            />
             <CustomMonacoEditor e={value} editorRef={editorRef} />
             {/* <DQLEditor value={content} /> */}
+
           </div>
           <div className="split-pane">
             <SecondEditorTabs />
@@ -238,45 +286,9 @@ export const EditorArea = () => {
       case 'json':
         return <CustomMonacoEditor e={value} editorRef={editorRef} />;
       default:
-        return <>
-          <ContextMenu.Root>
-            <ContextMenu.Trigger className="ContextMenuTrigger">
-              <div>Select a tab</div>;
-            </ContextMenu.Trigger>
-            <ContextMenu.Content
-              className="ContextMenuContent"
-              open={Boolean(contextMenuProps)}
-              onOpenChange={handleHideContextMenu}
-            >
-              <ContextMenu.Item onSelect={handleCopy} className="ContextMenuItem">Run Query</ContextMenu.Item>
-              <ContextMenu.Item onSelect={handleAlert} className="ContextMenuItem">Save Query</ContextMenu.Item>
-              <ContextMenu.Item onSelect={handlePaste} className="ContextMenuItem">Clean Query</ContextMenu.Item>
-              <ContextMenu.Item onSelect={handleRemoveTab} className="ContextMenuItem">Delete Tab</ContextMenu.Item>
-
-              <ContextMenu.Separator />
-            </ContextMenu.Content>
-
-
-          </ContextMenu.Root>
-        </>
+        return <CustomMonacoEditor e={value} editorRef={editorRef} />;
     }
   };
-
-
-  const [splitSizes, setSplitSizes] = useState<[number, number]>([50, 50]);
-
-
-  const handleRemoveTab = () => {
-    removeTab(activeTab);
-    handleHideContextMenu();
-  };
-
-  const editorOptions = {
-    theme: 'vs-dark',
-    editorLanguage,
-  };
-
-
 
   useEffect(() => {
     const handleResize = () => {
@@ -288,55 +300,6 @@ export const EditorArea = () => {
       window.removeEventListener('resize', handleResize);
     };
   }, []);
-
-  useEffect(() => {
-    if (editorRef.current) {
-      setTimeout(() => {
-        editorRef.current.layout();
-      }, 0);
-    }
-  }, [splitSizes]);
-
-
-  useEffect(() => {
-    if (editorRef.current) {
-      editorRef.current.layout();
-    }
-  }, [activeTab]);
-
-
-  const [contextMenuProps, setContextMenuProps] = React.useState(null);
-
-  const handleContextMenu = ({ x, y }) => {
-    console.log('context menu');
-    setContextMenuProps({
-      left: x + 'px',
-      top: y + 'px',
-    });
-  };
-
-  const handleHideContextMenu = () => {
-    setContextMenuProps(null);
-  };
-
-  const handleCopy = () => {
-    const editor = editorRef.current;
-    const selection = editor.getSelection();
-    const text = editor.getModel().getValueInRange(selection);
-    navigator.clipboard.writeText(text);
-  };
-
-  const handlePaste = () => {
-    navigator.clipboard.readText().then((text) => {
-      const editor = editorRef.current;
-      const position = editor.getPosition();
-      editor.executeEdits('paste', [{ range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column), text: text }]);
-    });
-  };
-
-  const handleAlert = () => {
-    alert("Olá! Você selecionou 'Exibir alerta' no menu de contexto.");
-  };
 
 
   return (
@@ -368,5 +331,4 @@ export const EditorArea = () => {
       </Tabs.Root>
     </EditorAreaStyled>
   );
-
 };
