@@ -38,6 +38,12 @@ import { func } from '../../monaco-editor-languages';
 
 const init = func();
 
+interface CustomMonacoEditorProps {
+  content?: string;
+  language?: string;
+  editorRef?: any;
+}
+
 export const EditorArea = () => {
 
   // function toggleTheme() {
@@ -71,8 +77,7 @@ export const EditorArea = () => {
 
   const handleQuery = async (query: string) => {
     try {
-      const response = await DgraphService.query(query, activeTab);
-      console.log('Query response:', response);
+      await DgraphService.query(query, activeTab);
     } catch (err) {
       console.error('Error running query:', err);
     }
@@ -105,11 +110,11 @@ export const EditorArea = () => {
   const defaultVariables = activeTab?.defaultVariables || '';
 
 
-  const CustomMonacoEditor = (e: object) => {
-    let { id, title, content, type, language, Endpoint, defaultOperations, defaultVariables } = e.e.value;
+  const CustomMonacoEditor = (e: CustomMonacoEditorProps) => {
+
+    let { content, language, } = e;
     const { editorRef } = e;
 
-    const editorRefM = useRef(null);
 
     const removeAllTabs = useTabsStore((state) => state.removeAllTabs);
 
@@ -129,7 +134,10 @@ export const EditorArea = () => {
           contextMenuOrder: 1.5,
           run: async function (ed) {
             const query = ed.getValue();
-            console.log('Running query!', query);
+            if (language === 'schema') {
+              DgraphService.query('schema {}', activeTab);
+              return;
+            }
             handleQuery(query);
           },
         };
@@ -216,8 +224,10 @@ export const EditorArea = () => {
     let { id, title, content, type, language, Endpoint, defaultOperations, defaultVariables } = value.value;
 
     const handlePlay = () => {
-      // execute the code in the editor
-      console.log('play');
+      if (language === 'schema') {
+        DgraphService.query('schema {}', activeTab);
+        return;
+      }
       const currentContent = editorRef.current.getValue();
       handleEditorChange(currentContent);
       handleQuery(currentContent);
@@ -270,8 +280,7 @@ export const EditorArea = () => {
               onPlus={handlePlus}
               onSettings={handleSettings}
             />
-            <CustomMonacoEditor e={value} editorRef={editorRef} />
-            {/* <DQLEditor value={content} /> */}
+            <CustomMonacoEditor content={content} language={language} editorRef={editorRef} />;
 
           </div>
           <div className="split-pane">
@@ -280,13 +289,22 @@ export const EditorArea = () => {
         </Split>
 
       case 'graphql':
-        return <CustomMonacoEditor e={value} editorRef={editorRef} />;
+        return <CustomMonacoEditor content={content} language={language} editorRef={editorRef} />;
       case 'json':
-        return <CustomMonacoEditor e={value} editorRef={editorRef} />;
-      case 'json':
-        return <CustomMonacoEditor e={value} editorRef={editorRef} />;
+        return <CustomMonacoEditor content={content} language={language} editorRef={editorRef} />;
+      case 'schema':
+        return <>
+          <FloatingControl
+            onPlay={handlePlay}
+            onClear={handleClear}
+            onClone={handleClone}
+            onPlus={handlePlus}
+            onSettings={handleSettings}
+          />
+          <CustomMonacoEditor content={content} language='dql' editorRef={editorRef} />;
+        </>;
       default:
-        return <CustomMonacoEditor e={value} editorRef={editorRef} />;
+        return <CustomMonacoEditor content={content} language={language} editorRef={editorRef} />;
     }
   };
 

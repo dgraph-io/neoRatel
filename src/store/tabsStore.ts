@@ -14,6 +14,7 @@
 
 import create from 'zustand';
 import { mountStoreDevtool } from 'simple-zustand-devtools';
+import DgraphService from '../services/dgraphService';
 
 interface Tab {
   id: number;
@@ -62,14 +63,13 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
           tabs: updatedTabs,
       };
   }),
-    addTab: (type) => {
+    addTab: async (type) => {
         const tabs = get().tabs;
         const newId = tabs.length > 0 ? Math.max(...tabs.map((tab) => tab.id)) + 1 : 1;
         const formattedString = `schema {} \n\n{\n\tq(func: Type(User)) {\n \t expand(_all_)\n\t}\n}`;
-
         
         let language;
-        let content = `# ${newId} Write your DQL query here \n\n${formattedString}`;
+        let content = '';
         let Endpoint = 'http://localhost:8080';
         let defaultOperations = '';
         let defaultVariables = '';
@@ -83,6 +83,12 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
           content = '{\n\t"set": [{}]\n}';
         } else if (type === 'DQL') {
           language = 'dql';
+          content = `# ${newId} Write your DQL query here \n\n${formattedString}`
+        } else if (type === 'Schema') {
+          language = 'schema';
+          let query = `schema {}`
+          const response = await DgraphService.query(query, newId);
+          content = '# Write your schema here\n\n'+ response;
         } else {
           language = 'plaintext';
         }
