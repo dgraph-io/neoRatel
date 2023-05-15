@@ -32,10 +32,13 @@ const WelcomePage = () => {
       <Title>Welcome to Dgraph</Title>
       <Description>To get started, create a new tab in the format you desire:</Description>
       <ButtonsContainer>
-        <Button onClick={() => handleCreateTab('DQL')}><SiDgraph /> Create DQL Tab</Button>
-        <Button onClick={() => handleCreateTab('GraphQL')}><SiGraphql /> Create GraphQL Tab</Button>
-        <Button onClick={() => handleCreateTab('JSON View')}><VscJson /> Create JSON Tab</Button>
-        <Button onClick={() => handleCreateTab('RDF')}>Create RDF Tab</Button>
+        <Button onClick={() => handleCreateTab('DQL')}><SiDgraph /> Create DQL Tab </Button>
+        <Button onClick={() => handleCreateTab('GraphQL')}><SiGraphql /> Create GraphQL Tab </Button>
+        <Button onClick={() => handleCreateTab('JSON View')}><VscJson /> Create JSON Tab </Button>
+        <Button onClick={() => handleCreateTab('RDF')}>Create RDF Tab </Button>
+      </ButtonsContainer>
+      <ButtonsContainer>
+        <Button onClick={() => handleCreateTab('Schema')}><SiDgraph /> Edit Schema </Button>
       </ButtonsContainer>
       <DgraphConfigDialog />
     </WelcomeContainer>

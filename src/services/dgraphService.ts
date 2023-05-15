@@ -2,6 +2,66 @@ import axios from "axios";
 import { useDgraphConfigStore } from "../store/dgraphConfigStore";
 import { useTabsStore } from "../store/tabsStore";
 
+interface SchemaObj {
+  data: {
+    schema: any;
+    types: any;
+  };
+}
+
+async function convertSchemaToText(schemaObj: SchemaObj) {
+  const { schema, types } = schemaObj.data;
+
+  // Group predicates by type
+  const predicatesByType: { [key: string]: any[] } = {};
+  for (const predicate of schema) {
+    if (!predicate.predicate.startsWith('dgraph.')) {
+      if (!predicatesByType[predicate.type]) {
+        predicatesByType[predicate.type] = [];
+      }
+      predicatesByType[predicate.type].push(predicate);
+    }
+  }
+
+  let schemaText = '';
+  // Iterate through each type
+  for (const type in predicatesByType) {
+    schemaText += `# ${type.toUpperCase()} Predicates\n`;
+    for (const predicate of predicatesByType[type]) {
+      schemaText += `    <${predicate.predicate}>: `;
+      if (predicate.list) {
+        schemaText += `[${predicate.type}]`;
+      } else {
+        schemaText += predicate.type;
+      }
+      if (predicate.index) {
+        schemaText += ' @index(' + predicate.tokenizer.join(", ") + ')';
+      }
+      if (predicate.reverse) {
+        schemaText += ' @reverse';
+      }
+      schemaText += ' .\n';
+    }
+    schemaText += '\n';
+  }
+
+  schemaText += '# Types\n';
+  for (const type of types) {
+    if (!type.name.startsWith('dgraph.')) {
+      schemaText += `type <${type.name}> {\n`;
+      for (const field of type.fields) {
+        if (!field.name.startsWith('dgraph.')) {
+          schemaText += `  ${field.name}\n`;
+        }
+      }
+      schemaText += '}\n\n';
+    }
+  }
+
+  return schemaText;
+}
+
+
 class DgraphService {
   currentUrl: null;
   constructor() {
@@ -42,7 +102,12 @@ class DgraphService {
         },
       });
       // Set the result in the Zustand store
-      useTabsStore.getState().updateTabContent(tabId, q, response.data);
+      if (q.startsWith('schema {') && q.endsWith('}')) {
+        response.data = await convertSchemaToText(response.data);
+        useTabsStore.getState().updateTabContent(tabId, response.data, response.data);
+      } else {
+        useTabsStore.getState().updateTabContent(tabId, q, response.data);
+      }
       return response.data;
     } catch (error) {
       console.error("Error fetching data from Dgraph:", error);
