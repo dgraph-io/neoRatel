@@ -70,7 +70,7 @@ export const useTabsStore = create<TabsStore>((set, get) => ({
         
         let language;
         let content = '';
-        let Endpoint = 'http://10.0.0.63:8081/';
+        let Endpoint = 'http://localhost:8080';
         let defaultOperations = '';
         let defaultVariables = '';
 
