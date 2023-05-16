@@ -31,6 +31,7 @@ import Split from 'react-split';
 import AddTabDialog from '../TabDialog/TabDialog';
 
 import DgraphService from '../../services/dgraphService';
+import { useDgraphConfigStore } from '../../store/dgraphConfigStore';
 
 import '../../userWorker';
 
@@ -67,6 +68,8 @@ export const EditorArea = () => {
   const setActiveTab = useTabsStore((state) => state.switchTab);
   const updateTabContent = useTabsStore((state) => state.updateTabContent);
   const removeTab = useTabsStore((state) => state.removeTab);
+  //useDgraphConfigStore
+  const aclTokenState = useDgraphConfigStore((state) => state.aclToken);
 
   const editorRef = useRef(null);
   const [splitSizes, setSplitSizes] = useState<[number, number]>([50, 50]);
@@ -77,6 +80,8 @@ export const EditorArea = () => {
 
   const handleQuery = async (query: string) => {
     try {
+      console.log('aclTokenState:', aclTokenState);
+      console.log('query:', query);
       await DgraphService.query(query, activeTab);
     } catch (err) {
       console.error('Error running query:', err);

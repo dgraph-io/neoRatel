@@ -40,7 +40,7 @@ const WelcomePage = () => {
       <ButtonsContainer>
         <Button onClick={() => handleCreateTab('Schema')}><SiDgraph /> Edit Schema </Button>
       </ButtonsContainer>
-      <DgraphConfigDialog />
+      {/* <DgraphConfigDialog /> */}
     </WelcomeContainer>
   );
 };
