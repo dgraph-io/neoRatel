@@ -31,6 +31,7 @@ import Split from 'react-split';
 import AddTabDialog from '../TabDialog/TabDialog';
 
 import DgraphService from '../../services/dgraphService';
+import { useDgraphConfigStore } from '../../store/dgraphConfigStore';
 
 import '../../userWorker';
 
@@ -68,6 +69,7 @@ export const EditorArea = () => {
   const updateTabContent = useTabsStore((state) => state.updateTabContent);
   const removeTab = useTabsStore((state) => state.removeTab);
 
+  const aclTokenState = useDgraphConfigStore((state) => state.aclToken);
   const editorRef = useRef(null);
   const [splitSizes, setSplitSizes] = useState<[number, number]>([50, 50]);
 
