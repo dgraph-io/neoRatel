@@ -114,11 +114,6 @@ class DgraphService {
       };
 
       const response = await axios.post(this.currentUrl + "/" + endpoint, data, config);
-      console.log(useDgraphConfigStore.getState());
-      console.log(config);
-      console.log(response.data.data);
-      console.log(data);
-      console.log(" end");
 
       if (endpoint === "query") {
         if (data.startsWith('schema {') && data.endsWith('}')) {
