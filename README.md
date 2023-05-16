@@ -1,23 +1,61 @@
 # neoRatel
 
-This is an internal project for Ratel. Codename "NeoRatel".
+UI tool for Dgraph Developers.
+It is inspired by the existing functionalities of Ratel.
 
-# Running
+# Get started
 
-Just clone the repository. Run npm install and then npm run dev. And it will already be running.
+- clone the repository
+- `npm install` to install dependencies
+- `npm run dev` to start a local server 
 
 
-### Notes
+# Use cases
 
-I have created this project while ago. After talking with Akon it was decided that I would create a new repo and share it with the team.
-The basic idea is to completely replace the current Ratel. Because he is insanely complex to maintain. My idea was to start from scratch and simpler. I’m using zustand instead of Redux and Vite instead of create react app. The goal is to have fewer dependencies compared to the current one and to be able to move quickly and be as light as possible.
+**Application Developers** can 
+- connect to Dgraph cluster on-prem or in Cloud
+  - [x] providing an API key (cloud only)
+  - [x] providing a user/password (on-prem or cloud with ACL)
+  - [ ] providing a security token (on-prem with --security option)
 
-If you can contribute feel free.
+- execute a DQL query and 
+  - [x] see the result as JSON
+  - [ ] see the result as Graph
+  - [ ] see the result as Chart
+  - [x] see the result as markers on a map
+- [x] execute a DQL mutation
+- [x] build a DQL query using an graphical editor
 
-# Goals of this project
+- execute a GraphQL query and 
+  - [x] see the result as JSON
+  - [ ] see the result as Graph
+  - [ ] see the result as Chart
+  - [ ] see the result as markers on a map
+- [ ] execute a GraphQL mutation
+- [ ] build a GraphQL query or mutation using an graphical editor
 
-This project is under development. So we will have bugs, market(dev) standard organization problems and so on.
+- Manage DQL Schema: 
+  - [ ] create a DQL Schema
+  - [ ] update DQL predicate definition (type and indexes)
+  - [ ] Drop the DQL schema and all data
+  - [ ] remove a predicate and drop associated data
+  
 
+- Manage Dgraph data: 
+  - [ ] see the number of nodes having a specific predicate
+  - [ ] Drop all data 
+  - [ ] Drop data related to a predicate
+   
+  
+# Technical stack
+One of the motivation for this project is to have a UI tool for Application developers interacting with Dgraph, based on a recent technology stack, with few dependencies and easy to maintain.
+
+The current stack is using
+- zustand
+- Vite 
+
+
+# Technical tasks
 - [x] Create a new project from scratch
 - [x] Use Vite instead of create react app
 - [x] Use zustand instead of Redux
