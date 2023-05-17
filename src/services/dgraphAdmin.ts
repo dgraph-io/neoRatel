@@ -2,7 +2,18 @@ import axios from "axios";
 import { ADD_NAMESPACE, DELETE_NAMESPACE, RESET_PASSWORD, EXPORT, SHUTDOWN, LOGIN_MUTATION } from "./graphql/mutations";
 import { LIST_NAMESPACES } from "./graphql/queries";
 
-class DgraphAdminService {
+interface IDgraphAdminService {
+    query(query: string, clusterUrl: string): Promise<any>;
+    mutate(mutation: string, clusterUrl: string, variables?: any): Promise<any>;
+    addNamespace(password: string, clusterUrl: string): Promise<any>;
+    listNamespaces(clusterUrl: string): Promise<any>;
+    deleteNamespace(namespaceId: number, clusterUrl: string): Promise<any>;
+    resetPassword(userId: string, password: string, namespace: number, clusterUrl: string): Promise<any>;
+    login(userId: string, password: string, namespace: number, clusterUrl: string): Promise<any>;
+    export(format: string, namespace: number, clusterUrl: string): Promise<any>;
+    shutdown(clusterUrl: string): Promise<any>;
+}
+class DgraphAdminService implements IDgraphAdminService {
     async query(query: string, clusterUrl: string) {
         try {
             const response = await axios.post(clusterUrl , { query });

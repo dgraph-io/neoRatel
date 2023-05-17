@@ -66,10 +66,21 @@ async function convertSchemaToText(schemaObj: SchemaObj) {
   return schemaText;
 }
 
+interface IDgraphService {
+  aclToken: string | null;
+  currentUrl: string | null;
+  sanitizeUrl(url: string): string;
+  ensureNoSlash(path: string): string;
+  executeRequest(endpoint: string, data: any, options: any, tabId: number): Promise<any>;
+  query(q: any, tabId: number): Promise<any>;
+  mutate(m: any, tabId: number): Promise<any>;
+  alter(schema: string): Promise<any>;
+}
 
-class DgraphService {
-  aclToken = null;
-  currentUrl = null;
+class DgraphService implements IDgraphService {
+  aclToken: string | null;
+  currentUrl: string | null;
+
   constructor() {
     this.currentUrl = null;
     this.aclToken = null;
