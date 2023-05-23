@@ -20,15 +20,15 @@ It is inspired by the existing functionalities of Ratel.
 - connect to Dgraph cluster on-prem or in Cloud
   - [x] providing an API key (cloud only)
   - [x] providing a user/password (on-prem or cloud with ACL)
-  - [ ] providing a security token (on-prem with --security option)
+  - [x] providing a security token (on-prem with --security option)
 
 - execute a DQL query and 
   - [x] see the result as JSON
   - [ ] see the result as Graph
   - [ ] see the result as Chart
-  - [x] see the result as markers on a map
+  - [ ] see the result as markers on a map
 - [x] execute a DQL mutation
-- [x] build a DQL query using an graphical editor
+- [ ] build a DQL query using an graphical editor
 
 - execute a GraphQL query and 
   - [x] see the result as JSON
